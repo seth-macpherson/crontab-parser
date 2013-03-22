@@ -12,10 +12,30 @@ describe "CrontabRuby" do
     CrontabParser::TimeParser.parse('*/9', 0, 23).should == [0,9,18]
   end
 
+  it 'should calculate the next run' do
+    times = [
+      {:expected_result => Time.new(2013,3,22,2,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[2], :min=>[0], :week=>[0, 1, 2, 3, 4, 5, 6]},
+      {:expected_result => Time.new(2013,3,22,6,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[6], :min=>[0], :week=>[0, 1, 2, 3, 4, 5, 6]},
+      {:expected_result => Time.new(2013,3,24,6,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[6], :min=>[0], :week=>[0]},
+      {:expected_result => Time.new(2013,3,26,10,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[10], :min=>[0], :week=>[2]},
+      {:expected_result => Time.new(2013,3,22,22,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[22], :min=>[0], :week=>[0, 1, 2, 3, 4, 5, 6]},
+      {:future => Time.new(2013,3,22,4,5,0,0).utc, :expected_result => Time.new(2013,3,25,4,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[4], :min=>[0], :week=>[1, 2, 3, 4, 5]},
+      {:expected_result => Time.new(2013,3,22,9,0,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[9], :min=>[0], :week=>[0, 1, 2, 3, 4, 5, 6]},
+      {:expected_result => Time.new(2013,3,22,0,10,0,0).utc, :month=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], :day=>[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], :hour=>[0, 4, 8, 12, 16, 20], :min=>[10], :week=>[0, 1, 2, 3, 4, 5, 6]}
+    ]
+    times.each do |cron|
+      puts cron
+      # # Choose an explicit time as now to run the tests against
+      # pretend_now = cron[:future] || Time.new(2013,3,21,8,0,0,0).utc
+      # 
+      # record.next_run(pretend_now,cron).should eql cron[:expected_result]
+    end
+  end
+
   it 'should parse each row' do
     # min,hour,day,mon,week,cmd
     record = CrontabParser::Record.new(<<-CRON)
-      * * * * * foo
+    * * * * * foo
     CRON
     record.cmd.should == 'foo'
     record.times.should == {
@@ -28,7 +48,7 @@ describe "CrontabRuby" do
     record.should_run?(Time.now).should be_true
 
     record = CrontabParser::Record.new(<<-CRON)
-      1,2,3,5-10,21-27/5 2-5 */3 * * bar
+    1,2,3,5-10,21-27/5 2-5 */3 * * bar
     CRON
     record.cmd.should == 'bar'
     record.times.should == {
@@ -42,7 +62,7 @@ describe "CrontabRuby" do
     record.should_run?(Time.utc(2010,1,3,2,5,0)).should be_true
 
     record = CrontabParser::Record.new(<<-CRON)
-      @daily baz
+    @daily baz
     CRON
     record.cmd.should == 'baz'
     record.times.should == {
@@ -56,13 +76,13 @@ describe "CrontabRuby" do
 
   it 'should parse annotations' do
     c = CrontabParser.new(<<-CRON)
-      @yearly 1/1 only
-      @annually 1/1 only
-      @monthly day 1 only
-      @weekly week==0 only
-      @daily 00:00 only
-      @midnight 00:00 only
-      @hourly *:00 only
+    @yearly 1/1 only
+    @annually 1/1 only
+    @monthly day 1 only
+    @weekly week==0 only
+    @daily 00:00 only
+    @midnight 00:00 only
+    @hourly *:00 only
     CRON
     rows = c.to_a
     rows[0].times.should == {
@@ -106,12 +126,12 @@ describe "CrontabRuby" do
 
   it 'should parse crontab' do
     c = CrontabParser.new(<<-CRON)
-      # should ignore comment only line and blank line
+    # should ignore comment only line and blank line
 
-      #m h d m w cmd
-       * * * * * foo # always run. this comment was ignored
-       3 * * * * bar
-       */1 0-22 * * * baz
+    #m h d m w cmd
+    * * * * * foo # always run. this comment was ignored
+    3 * * * * bar
+    */1 0-22 * * * baz
     CRON
     now = Time.utc(2010,1,1,0,0,0)
     c.find_all{|row|
